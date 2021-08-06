@@ -9,15 +9,19 @@ const Board = () => {
   const [squares, setSquares] = useState(Array(9).fill(null));
   const [symbol, setSymbol] = useState();
   const [xIsNext, setXisNext] = useState(true);
+  const [showRestartButton, setShowRestartButton] = useState(true);
   const winner = calculateWinner(squares);
   let status;
   if (winner) {
     status = 'Winner: ' + winner;
+    // setShowRestartButton(true);
   } else {
     status = xIsNext ? 'Next Player: X' : 'Next Player: O';
   }
 
   const handleClick = (i) => {
+    // test that it is your turn
+    if ((xIsNext && symbol === 'O') || (!xIsNext && symbol === 'X')) return;
     const tempSquares = squares.slice();
     // case there is a winner or square is already taken
     if (calculateWinner(squares) || squares[i]) return;
@@ -69,6 +73,15 @@ const Board = () => {
         {renderSquare(7)}
         {renderSquare(8)}
       </div>
+      {showRestartButton && (
+        <button
+          onClick={() => {
+            socket.emit('restart');
+          }}
+        >
+          Restart
+        </button>
+      )}
     </div>
   );
 };

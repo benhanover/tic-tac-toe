@@ -27,7 +27,7 @@ io.on('connection', (socket) => {
 
   socket.on('make move', (data) => {
     if (!getOpponent(socket)) return;
-    // socket.emit('move made', data);
+    socket.emit('move made', data);
     getOpponent(socket).emit('move made', data);
   });
 
