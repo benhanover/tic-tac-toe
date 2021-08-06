@@ -7,6 +7,7 @@ import { io } from 'socket.io-client';
 const Board = () => {
   const [socket, setSocket] = useState();
   const [squares, setSquares] = useState(Array(9).fill(null));
+  const [symbol, setSymbol] = useState();
   const [xIsNext, setXisNext] = useState(true);
   const winner = calculateWinner(squares);
   let status;
@@ -20,7 +21,7 @@ const Board = () => {
     const tempSquares = squares.slice();
     // case there is a winner or square is already taken
     if (calculateWinner(squares) || squares[i]) return;
-    tempSquares[i] = xIsNext ? 'X' : 'O';
+    tempSquares[i] = symbol;
     setSquares(tempSquares);
     socket.emit('make move', { squares: tempSquares, xIsNext: !xIsNext });
     setXisNext(!xIsNext);
@@ -33,9 +34,14 @@ const Board = () => {
   const connect = () => {
     const socket = io('http://localhost:4000/');
     setSocket(socket);
+
     socket.on('move made', (data) => {
       setSquares(data.squares);
       setXisNext(data.xIsNext);
+    });
+
+    socket.on('game begin', ({ symbol }) => {
+      setSymbol(symbol);
     });
     // socket.on('test', (msg) => {
     //   console.log(msg);

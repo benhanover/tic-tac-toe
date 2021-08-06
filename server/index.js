@@ -40,6 +40,7 @@ io.on('connection', (socket) => {
 });
 
 ///////////////////////////////////////////////////////////////////////
+
 function initializePlayers(socket) {
   players[socket.id] = {
     opponent: rival,
