@@ -13,7 +13,6 @@ let rival;
 
 io.on('connection', (socket) => {
   console.log(socket.id, 'connected');
-  console.log(players);
   // socket.emit('test', 'testtt');
   initializePlayers(socket);
 
@@ -28,8 +27,8 @@ io.on('connection', (socket) => {
 
   socket.on('make move', (data) => {
     if (!getOpponent(socket)) return;
-    socket.emit('move made', data);
-    getOpponent(socket.emit('move made', data));
+    // socket.emit('move made', data);
+    getOpponent(socket).emit('move made', data);
   });
 
   socket.on('disconnect', () => {
@@ -57,8 +56,8 @@ function initializePlayers(socket) {
 }
 // **
 function getOpponent(socket) {
-  if (!players[socket.id].opponent) return;
-  return players[players[socket.id].opponent].socket;
+  if (!players[socket.id]?.opponent) return;
+  return players[players[socket.id]?.opponent]?.socket;
 }
 
 server.listen(4000, () => {
