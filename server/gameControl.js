@@ -1,19 +1,15 @@
-const express = require('express');
-const app = express();
-const server = require('http').createServer(app);
-const { Server } = require('socket.io');
-const io = new Server(server, {
-  cors: {
-    origin: '*',
-  },
-});
-
+const io = require('./server');
 const players = {};
 let rival;
+const {
+  makeMove,
+  restart,
+  matchPlayers,
+  setPlayerForMatch,
+} = require('./controllers');
 
 io.on('connection', (socket) => {
   console.log(socket.id, 'connected');
-  // socket.emit('test', 'testtt');
   initializePlayers(socket);
   console.log(Object.keys(players));
 
@@ -27,19 +23,9 @@ io.on('connection', (socket) => {
   } else {
     socket.emit('waiting for opponent');
   }
+  socket.on('make move', (data) => makeMove(data, getOpponent, socket));
 
-  socket.on('make move', (data) => {
-    if (!getOpponent(socket)) return;
-    console.log(socket.id);
-    console.log(getOpponent(socket).id);
-    socket.emit('move made', data);
-    getOpponent(socket).emit('move made', data);
-  });
-
-  socket.on('restart', () => {
-    socket.emit('restart');
-    getOpponent(socket).emit('restart');
-  });
+  socket.on('restart', () => restart(socket, getOpponent));
 
   socket.on('disconnect', () => {
     console.log(socket.id, 'disconnected');
@@ -47,20 +33,10 @@ io.on('connection', (socket) => {
     if (opponent) {
       opponent.emit('waiting for opponent');
       if (rival) {
-        players[rival].symbol = 'X';
-        players[opponent.id].symbol = 'O';
-        players[rival].opponent = opponent.id;
-        players[opponent.id].opponent = rival;
-        players[rival].socket.emit('game begin', {
-          symbol: players[rival].symbol,
-        });
-        opponent.emit('game begin', {
-          symbol: players[opponent.id].symbol,
-        });
+        matchPlayers(players, rival, opponent);
         rival = null;
       } else {
-        players[opponent.id].opponent = undefined;
-        players[opponent.id].symbol = 'X';
+        setPlayerForMatch(players, opponent);
         rival = opponent.id;
       }
     } else {
@@ -70,7 +46,6 @@ io.on('connection', (socket) => {
     // console.log(Object.keys(players));
   });
 });
-
 ///////////////////////////////////////////////////////////////////////
 
 function initializePlayers(socket) {
@@ -92,7 +67,3 @@ function getOpponent(socket) {
   if (!players[socket.id]?.opponent) return;
   return players[players[socket.id]?.opponent]?.socket;
 }
-
-server.listen(4000, () => {
-  console.log('listening on port 4000');
-});
