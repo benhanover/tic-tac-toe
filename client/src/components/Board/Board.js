@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import Square from '../Square/Square';
-import './board.css';
-import { calculateWinner } from '../../helper';
 import { io } from 'socket.io-client';
+import Square from '../Square/Square';
+import { calculateWinner } from '../../helper';
+import './board.css';
 
 const Board = () => {
   const [socket, setSocket] = useState();
@@ -10,29 +10,31 @@ const Board = () => {
   const [symbol, setSymbol] = useState();
   const [xIsNext, setXisNext] = useState(true);
   const [waitForOpponent, setWaitForOpponent] = useState(true);
+
   let winner = calculateWinner(squares);
   let status;
   if (winner) {
     status = 'Winner: ' + winner;
   } else {
-    status = xIsNext ? 'Next Player: X' : 'Next Player: O';
+    const isDraw = squares.every((val) => val !== null);
+    status = isDraw
+      ? 'Draw'
+      : (xIsNext && symbol === 'X') || (!xIsNext && symbol === 'O')
+      ? 'Your Turn'
+      : 'Opponent Turn';
   }
 
   const handleClick = (i) => {
-    console.log('1');
-    console.log(symbol, 'xisnext:', xIsNext);
     // test that it is your turn
     if ((xIsNext && symbol === 'O') || (!xIsNext && symbol === 'X')) return;
-    console.log('2');
-    const tempSquares = squares.slice();
     // case there is a winner or square is already taken
     if (calculateWinner(squares) || squares[i]) return;
-    console.log('3');
+
+    const tempSquares = squares.slice();
     tempSquares[i] = symbol;
     setSquares(tempSquares);
     socket.emit('make move', { squares: tempSquares, xIsNext: !xIsNext });
     setXisNext(!xIsNext);
-    console.log('4');
   };
 
   const renderSquare = (i) => {
@@ -44,13 +46,11 @@ const Board = () => {
     setSocket(socket);
 
     socket.on('move made', (data) => {
-      console.log('move made');
       setSquares(data.squares);
       setXisNext(data.xIsNext);
     });
 
     socket.on('game begin', ({ symbol }) => {
-      console.log('game begin', symbol);
       winner = null;
       setWaitForOpponent(false);
       setXisNext(true);
@@ -66,10 +66,8 @@ const Board = () => {
       setSquares(Array(9).fill(null));
       setWaitForOpponent(true);
     });
-    // socket.on('test', (msg) => {
-    //   console.log(msg);
-    // });
   };
+
   useEffect(() => {
     connect();
   }, []);
@@ -77,34 +75,45 @@ const Board = () => {
   return (
     <div>
       {waitForOpponent ? (
-        <h1> Waiting for player to join</h1>
+        <div className='waiting-for-div'>
+          <h1> Waiting for player to join</h1>
+        </div>
       ) : (
-        <>
-          <div>you are: {symbol}</div>
-          <div className='status'>{status}</div>
-          <div className='board-row'>
-            {renderSquare(0)}
-            {renderSquare(1)}
-            {renderSquare(2)}
+        <div className='board-container'>
+          <div className='messages'>
+            <div>you are: {symbol}</div>
+            <div className='status'>{status}</div>
           </div>
-          <div className='board-row'>
-            {renderSquare(3)}
-            {renderSquare(4)}
-            {renderSquare(5)}
+          <div className='board'>
+            <div>
+              {renderSquare(0)}
+              {renderSquare(1)}
+              {renderSquare(2)}
+            </div>
+            <div>
+              {renderSquare(3)}
+              {renderSquare(4)}
+              {renderSquare(5)}
+            </div>
+            <div>
+              {renderSquare(6)}
+              {renderSquare(7)}
+              {renderSquare(8)}
+            </div>
           </div>
-          <div className='board-row'>
-            {renderSquare(6)}
-            {renderSquare(7)}
-            {renderSquare(8)}
-          </div>
-          <button
-            onClick={() => {
-              socket.emit('restart');
-            }}
-          >
-            Restart
-          </button>
-        </>
+          {(winner || status === 'Draw') && (
+            <div className='restart-button-container'>
+              <button
+                className='restart-button'
+                onClick={() => {
+                  socket.emit('restart');
+                }}
+              >
+                Restart
+              </button>
+            </div>
+          )}
+        </div>
       )}
     </div>
   );

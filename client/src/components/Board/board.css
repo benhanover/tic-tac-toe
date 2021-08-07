@@ -2,8 +2,45 @@
   margin-bottom: 10px;
 }
 
-.board-row:after {
-  clear: both;
-  content: '';
-  display: table;
+.board {
+  margin-top: 5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.board-container {
+  display: flex;
+  flex-direction: column;
+  font-size: 3rem;
+}
+
+.messages {
+  margin-top: 1rem;
+  display: flex;
+  justify-content: space-around;
+}
+
+.restart-button-container {
+  display: flex;
+  justify-content: center;
+}
+
+.restart-button {
+  margin-top: 1rem;
+  font-size: 3rem;
+  background-color: rgba(216, 77, 77, 0.664);
+}
+
+.restart-button:hover {
+  background-color: rgba(204, 200, 200, 0.527);
+}
+
+.waiting-for-div {
+  font-size: 2rem;
+  height: 95vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
