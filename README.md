@@ -1,5 +1,16 @@
 # tic-tac-toe
 
+## Docker
+`cd server`<br>
+`docker build -t tic_server .`<br>
+`docker run -d -p 4000:4000 tic_server`<br>
+`cd ../client`<br>
+`docker build -t tic_front .`<br>
+`docker run -d -p 8080:80 tic_front`<br>
+`enjoy http://localhost:8080`
+
+
+## Locally
 1. clone this repoisitory
 2. cd server, npm install the dependecies
 3. run npm run dev
